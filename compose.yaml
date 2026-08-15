@@ -1,0 +1,28 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      WORKBENCH_QDRANT_URL: http://qdrant:6333
+      WORKBENCH_DATABASE_PATH: /data/workbench.db
+    ports: ["8090:8090"]
+    depends_on:
+      qdrant: {condition: service_started}
+    volumes: ["workbench-data:/data"]
+    security_opt: ["no-new-privileges:true"]
+
+  frontend:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_WORKBENCH_API_URL: http://localhost:8090
+    ports: ["3100:3000"]
+    depends_on:
+      backend: {condition: service_healthy}
+
+  qdrant:
+    image: qdrant/qdrant:v1.15.4
+    ports: ["6333:6333"]
+    volumes: ["qdrant-data:/qdrant/storage"]
+
+volumes:
+  workbench-data:
+  qdrant-data:
